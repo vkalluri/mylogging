@@ -1,11 +1,13 @@
 package com.venkata.logging.service;
 
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
 
 public class SimpleLogger {
@@ -19,6 +21,11 @@ public class SimpleLogger {
         initializeLogLevel();
     }
 
+    /**
+     * This method logs the message
+     * @param level
+     * @param message
+     */
     public static void log(LogLevel level, String message) {
 
         if (level.ordinal() <= logLevel.ordinal()) {
@@ -27,7 +34,9 @@ public class SimpleLogger {
         }
     }
 
-
+    /**
+     * This method reads the application.properties file and loads the log level
+     */
     private static void initializeLogLevel() {
         try (InputStream input = SimpleLogger.class.getClassLoader().getResourceAsStream("application.properties")) {
             Properties properties = new Properties();
@@ -43,7 +52,11 @@ public class SimpleLogger {
         }
     }
 
-    private static void initializeLogLevel(String level) {
+    /**
+     * This method initializes the log level with passed value
+     * @param level
+     */
+    public static void initializeLogLevel(String level) {
             if (level != null) {
                 logLevel = LogLevel.valueOf(level.toUpperCase());
             } else {
@@ -51,16 +64,35 @@ public class SimpleLogger {
             }
     }
 
+    /**
+     * This method formats the message and adds timestamp to the log message
+     * @param level
+     * @param message
+     * @return
+     */
     private static String formatLogMessage(LogLevel level, String message) {
         String timestamp = TIMESTAMP_FORMAT.format(new Date());
         return String.format("%s [%s] - %s", timestamp, level.name(), message);
     }
 
+    /**
+     *
+     * @param message
+     */
     private static void writeLogToFile(String message) {
 
-        System.out.println(message + System.lineSeparator() );
+        try (FileWriter writer = new FileWriter(LOG_FILE, true)) {
+            writer.write(message + System.lineSeparator());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * This method sets the target based on the Log Level
+     * @param level
+     * @param message
+     */
     private static void writeLogToFile(LogLevel level, String message) {
 
         switch (level){
@@ -79,11 +111,63 @@ public class SimpleLogger {
 
     }
 
+    /**
+     * Sets log level
+     * @param level
+     */
     public static void setLogLevel(LogLevel level) {
         logLevel = level;
     }
 
+    /**
+     * Gets the log level
+     * @return
+     */
     public static LogLevel getLogLevel() {
         return logLevel;
+    }
+
+    /**
+     * This method is used for Info logging
+     * @param message
+     */
+    public static void info(String message){
+        if (LogLevel.INFO.ordinal() <= logLevel.ordinal()) {
+            String formattedMessage = formatLogMessage(LogLevel.INFO, message);
+            writeLogToFile(LogLevel.INFO, formattedMessage);
+        }
+    }
+
+    /**
+     * This method is used to log Debug messages
+     * @param message
+     */
+    public static void debug(String message){
+        if (LogLevel.DEBUG.ordinal() <= logLevel.ordinal()) {
+            String formattedMessage = formatLogMessage(LogLevel.DEBUG, message);
+            writeLogToFile(LogLevel.DEBUG, formattedMessage);
+        }
+    }
+
+    /**
+     * This method is used to log Warning messages
+     * @param message
+     */
+    public static void warning(String message){
+        if (LogLevel.WARNING.ordinal() <= logLevel.ordinal()) {
+            String formattedMessage = formatLogMessage(LogLevel.WARNING, message);
+            writeLogToFile(LogLevel.WARNING, formattedMessage);
+        }
+    }
+
+    /**
+     * This method is used to log Error messages
+     * @param message
+     */
+    public static void error(String message){
+        if (LogLevel.ERROR.ordinal() <= logLevel.ordinal()) {
+            String formattedMessage = formatLogMessage(LogLevel.ERROR, message);
+            writeLogToFile(LogLevel.ERROR, formattedMessage);
+        }
     }
 }
